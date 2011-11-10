@@ -37,9 +37,7 @@ to measure average ranking performance across all articles. AP is generated
 from the precision values calculated for the total TP and FP counts summed up
 from all articles at each rank. In addition, precision and recall are
 provided, and the macro-averaged results of all these functions with the
-corresponding standard deviations can be measured, too (Although, commonly
-the std. dev. will be too large and thus the average has no meaningful
-interpretation.)
+corresponding standard deviations can be measured, too.
 
 For the ACT the AUC P/R, and for the other tasks the Avrg. Precision can be
 plotted if matplotlib is installed. Any evaluation can also be made excluding
@@ -50,11 +48,14 @@ Input file formats
 
 Result files have to conform to the an official BioCreative result format
 used in the challenge.
+
 It is possible send multiple result files to this tool, either by listing one
 after the other (multiple arguments) or using the wildcard operators of your
 OS (usually, * and ?) in the path to the file(s).
 
-Notes about all input file formats:
+Notes about all input file formats
+----------------------------------
+
 Each column has to be separated by tabs, each row by newline characters.
 Columns allowed for each evaluation task are listed below; columns starting
 with "-" are mandatory, "+" are optional. Note that the format and content
@@ -68,7 +69,9 @@ optional columns requires the use of a special command line
 parameter (-c for confidence only, -r for rank only, or -l for none). Gold
 standard files must NOT have these optional columns, obviously.
 
-ACT - article classification format:
+ACT - article classification format
+-----------------------------------
+
 - article identifier (DOI, PMID, etc. - in essence, some unique ID)
 - classification (true/false, as either "t"/"f", 0/1, "true"/"false",
   "+"/"-", or "y"/"n", all case insensitive where applicable)
@@ -77,23 +80,32 @@ ACT - article classification format:
   ranks).
 + confidence (a floating point number in the range (0,1], not more precise
   than the decimal precision available to Python on your OS)
- 
-IMT - detection method format (same as INT):
-INT - protein normalization format:
+
+IMT - detection method format
+-----------------------------
+
+(same as INT)
+
+INT - protein normalization format
+----------------------------------
+
 - article identifier (DOI, PMID, etc. - in essence, some unique ID)
 - INT: protein identifier (UniProt accession, in essence any string)
   IMT: detection method ID (OBO PSI:MI term ID, in essence any string)
 + rank (same as ACT, but the rank has to be unique wrt. the article ID)
 + confidence (same as ACT)
 
-IPT - protein pairs format:
+IPT - protein pairs format
+--------------------------
+
 - article identifier (DOI, PMID, etc. - in essence, some unique ID)
 - protein A identifier (UniProt accession, in essence any string)
 - protein B identifier (UniProt accession, in essence any string)
 + rank (same as INT)
 + confidence (same as ACT)
 
-Protein pairs special note:
+Special note:
+
 It is of no relevance in which order a pair is given ("A B" or "B A"),
 however, the program will ensure that each pair is unique for a given article
 and reports an error if not.
