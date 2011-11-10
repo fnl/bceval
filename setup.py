@@ -7,7 +7,7 @@ for scheme in INSTALL_SCHEMES.values():
 
 setup(
     name='bc_evaluation',
-    version='2.3.1',
+    version='3.0.0',
     description='Official BioCreative evaluation script.',
     license='GNU GPL, latest version',
     author='Florian Leitner',
