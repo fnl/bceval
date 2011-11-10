@@ -1,20 +1,16 @@
-BioCreative II.5 Evaluation Script
-**********************************
+Official BioCreative Evaluation Script
+**************************************
 
-This package contains the official evaluation script for BioCreative II.5.
+This package contains the official evaluation script for BioCreative challenges.
 
 It is compatible with Python 2.5-2.7.
 It is not compatible with earlier versions of Python.
 It has not been tested with Python 3+ and will most likely not work.
 
 Author: Florian Leitner <fleitner@cnio.es>
+The BioCreative homepage: http://www.biocreative.org/
 
 General information on the evaluation script: http://www.biocreative.org/resources/biocreative-ii5/evaluation-library/
-
-General information on the evaluation procedure:
-http://www.biocreative.org/tasks/biocreative-ii5/biocreative-ii5-evaluation/
-
-The BioCreative homepage: http://www.biocreative.org/
 
 ============
 INSTALLATION
@@ -26,7 +22,7 @@ Extract the library from the tar.gz:
 
 And move into the created directory:
 
-  cd bc_evaluation-X.X
+  cd bc_evaluation-X.X.X
 
 Global, system wide installation (you need to have admin/sudo permissions):
 
@@ -75,7 +71,7 @@ GENERAL NOTES
 
 The general way of using this tool is:
 
-  bc-evaluate [options] your_result_file gold_standard_file
+  bc-evaluate [options] your_result_files... gold_standard_file
 
 The default (w/o options) works for INT/normalizations and results files that have both confidence and rank values, returning a verbose evaluation report. For all other input/output options, please read the --documentation and the --help output carefully.
 
