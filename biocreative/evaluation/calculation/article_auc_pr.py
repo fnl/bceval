@@ -1,7 +1,7 @@
 from biocreative.evaluation.calculation.evaluation import AbstractEvaluation
 
-class ArticleAUCiPREvaluation(AbstractEvaluation):
-    """Implementation for the ACT AUC iP/R evaluation.
+class ArticleAucPrEvaluation(AbstractEvaluation):
+    """Implementation for the ACT AUC P/R evaluation.
     
     I.e., only looks at the annotation in the GS to determine if this
     classification should be counted as FP or TP. This is good enough to
@@ -27,4 +27,18 @@ class ArticleAUCiPREvaluation(AbstractEvaluation):
             ))
         
         self.store_p_at_current_r()
+    
+    @property
+    def auc_pr(self):
+        """AUC P/R score using the exact precision, recall curve."""
+        auc = 0.0
+        last_r = 0.0
+        last_p = 1.0
+
+        for p, r in self.yield_precision_recall_pairs():
+            auc += (p + last_p) / 2 * (r - last_r)
+            last_r = r
+            last_p = p
+
+        return auc
     

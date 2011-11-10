@@ -2,16 +2,16 @@ import unittest
 
 from mock import Mock, patch
 
-from biocreative.evaluation.calculation.article_auc_ipr \
-    import ArticleAUCiPREvaluation
+from biocreative.evaluation.calculation.article_auc_pr \
+    import ArticleAucPrEvaluation
 from biocreative.evaluation.calculation.tests.test_helpers \
     import Constants as C, CalculationAssertions
 
-class ArticleAUCiPREvaluationTest(CalculationAssertions):
+class ArticleAucPrEvaluationTest(CalculationAssertions):
     
     @patch('biocreative.evaluation.calculation.hits.Hits', spec=True)
     def setUp(self, unused):
-        self.evaluator = ArticleAUCiPREvaluation()
+        self.evaluator = ArticleAucPrEvaluation()
         self.evaluator.store_p_at_current_r = Mock()
         self.std_item = None
         
