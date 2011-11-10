@@ -2,8 +2,8 @@ import unittest
 
 class Constants(object):
     HITS_ATTRIBUTES = ('tp', 'fp', 'fn', 'tn')
-    PROTEIN_PROPERTIES = ('recall', 'precision', 'f_score', 'auc_ipr')
-    ARTICLE_PROPERTIES = (
+    PROTEIN_PROPERTIES = ('recall', 'precision', 'f_score', 'avrg_p')
+    article_auc_prOPERTIES = (
         'accuracy', 'mcc_score', 'sensitivity', 'specificity'
     )
 
@@ -37,10 +37,10 @@ class CalculationAssertions(unittest.TestCase):
 if __name__ == '__main__':
     from biocreative.evaluation.calculation.evaluation \
         import AbstractEvaluationTest
-    from biocreative.evaluation.calculation.article_auc_ipr \
-        import ArticleAUCiPREvaluationTest
+    from biocreative.evaluation.calculation.article_auc_pr \
+        import ArticleAucPrEvaluationTest
     from biocreative.evaluation.calculation.article_mcc \
-        import ArticleMCCEvaluationTest
+        import ArticleMccEvaluationTest
     from biocreative.evaluation.calculation.hits \
         import HitsTest
     from biocreative.evaluation.calculation.macro_evaluation \

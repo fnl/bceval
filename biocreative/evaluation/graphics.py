@@ -11,68 +11,60 @@ License: GNU Public License, latest version.
 
 from settings import Evaluate
 
-def plot_ipr_curves(evaluation_data, evaluation_type):
+def plot_avrg_p_curves(evaluation_data, evaluation_type):
     "Plot the given evaluation object for the given data/evaluation type."
     # ==================================
     # = REQUIRES matplotlib INSTALLED! =
     # ==================================
     from matplotlib import pyplot
-    ipr_values = evaluation_data.get_interpolated_pr_list()
     pr_values = tuple(evaluation_data.yield_precision_recall_pairs())
     handles = []
     labels = []
-    
-    handles.append(add_interpolated_curve(
-        evaluation_type, zip(*ipr_values)
-    ))
-    labels.append("interpolated")
-    
-    if evaluation_type is Evaluate.ACT:
-        handles.append(add_base_curve(zip(*pr_values)))
-        labels.append("base")
+
+    if evaluation_type == Evaluate.ACT:
+        handles.append(add_pr_curve(zip(*pr_values)))
+        labels.append("Precision/Recall")
+        title = "AUC = %.4f" % evaluation_data.auc_pr
     else:
-        handles.append(add_scatter_plot(zip(*pr_values)))
-        labels.append("overall, per rank")
-    
-    pyplot.xlim(0.0, 1.0)
-    pyplot.ylim(0.0, 1.0)
-    
-    pyplot.legend(
-        handles, labels,
-        title="AUC iP/R: %.5f" % evaluation_data.auc_ipr,
-        shadow=True
-    )
-    
+        handles.append(add_avrg_p_curve(zip(*pr_values)))
+        labels.append("Average Precision")
+        title = "AUC = %.4f" % evaluation_data.avrg_p
+
+    max_val = max((max(p for p, r in pr_values),
+                   max(r for p, r in pr_values)))
+    axis = int(max_val * 10) + 2
+    if axis > 10: axis = 10
+    axis /= 10.0
+    pyplot.ylim(0.0, axis)
+    pyplot.xlim(0.0, axis)
+    pyplot.legend(handles, labels, title=title, shadow=True)
     pyplot.show()
 
-def insert_points(pr_values):
+def insert_points(pr_values, avrg_p=False):
     p_values = list(pr_values[0])
     r_values = list(pr_values[1])
     
     if r_values[0] != 0.0:
-        p_values.insert(0, p_values[0])
+        if avrg_p:
+            p_values.insert(0, p_values[0])
+        else:
+            p_values.insert(0, 1.0)
+        
         r_values.insert(0, 0.0)
-    
-    if r_values[-1] != 1.0:
+
+    if r_values[-1] != 1.0 or p_values[-1] != 0.0:
         r_values.append(r_values[-1])
         p_values.append(0.0)
     
     return p_values, r_values
 
-def add_interpolated_curve(evaluation_type, pr_values):
+def add_avrg_p_curve(pr_values):
+    from matplotlib import pyplot
+    pr_values = insert_points(pr_values, True)
+    return pyplot.step(pr_values[1], pr_values[0], color="blue")
+
+def add_pr_curve(pr_values):
     from matplotlib import pyplot
     pr_values = insert_points(pr_values)
-    return pyplot.step(
-        pr_values[1], pr_values[0], color="blue",
-        linewidth=3 if evaluation_type is Evaluate.ACT else 1
-    )
-
-def add_scatter_plot(pr_values):
-    from matplotlib import pyplot
-    return pyplot.scatter(pr_values[1], pr_values[0], s=2, color="red")
-
-def add_base_curve(pr_values):
-    from matplotlib import pyplot
-    # pr_values = insert_points(pr_values)
     return pyplot.plot(pr_values[1], pr_values[0], color="red")
 

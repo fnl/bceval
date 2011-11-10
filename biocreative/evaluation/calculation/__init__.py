@@ -1,6 +1,6 @@
 """calculation
 
-Evaluation-relevant data store (Hits, P/R-scores) and calcualtion (AUC iP/R,
+Evaluation-relevant data store (Hits, P/R-scores) and calcualtion (AUC (i)P/R,
 F-measure, MCC, Accuracy, etc.).
 
 Created by Florian Leitner on 2009-10-21.

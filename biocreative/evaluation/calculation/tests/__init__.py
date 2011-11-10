@@ -3,10 +3,10 @@ import unittest
 from math import sqrt
 from random import randint, sample
 
-from biocreative.evaluation.calculation.article_auc_ipr \
-    import ArticleAUCiPREvaluation
+from biocreative.evaluation.calculation.article_auc_pr \
+    import ArticleAucPrEvaluation
 from biocreative.evaluation.calculation.article_mcc \
-    import ArticleMCCEvaluation
+    import ArticleMccEvaluation
 from biocreative.evaluation.calculation.protein \
     import ProteinEvaluation
 from biocreative.evaluation.calculation.macro_evaluation \
@@ -16,21 +16,23 @@ from biocreative.evaluation.calculation.tests.test_helpers \
 
 class CalculationTests(CalculationAssertions):
     
-    def test_article_auc_ipr(self):
+    def test_article_auc_pr(self):
         self.evaluator = CalculationTests.simulate_article_evaluator(
-            ArticleAUCiPREvaluation, 3
+            ArticleAucPrEvaluation, 3
         )
         self.assert_hits(self.evaluator.hits, tp=3, fp=7, fn=0, tn=0)
         self.assert_property("p_at_full_r", 3/8.0)
         recall_span = 1/3.0
         self.assert_property(
-            "auc_ipr",
-            1/1.0 * recall_span + 2/5.0 * recall_span + 3/8.0 * recall_span
+            "auc_pr",
+            (1/1.0 + 1/1.0)/2 * recall_span +
+            (1/4.0 + 2/5.0)/2 * recall_span +
+            (2/7.0 + 3/8.0)/2 * recall_span
         )
     
     def test_article_mcc(self):
         self.evaluator = CalculationTests.simulate_article_evaluator(
-            ArticleMCCEvaluation, 0
+            ArticleMccEvaluation, 0
         )
         self.assert_hits(self.evaluator.hits, tp=2, fp=2, fn=1, tn=5)
         self.assert_property("sensitivity", 2/3.0) # tp / (tp + fn)
@@ -71,7 +73,7 @@ class CalculationTests(CalculationAssertions):
         self.assert_property("recall", r)
         self.assert_property("f_score", 2.0 * p * r / (p + r))
         self.assert_property("p_at_full_r", None)
-        self.assert_property("auc_ipr", 1/1.0 * 1/3.0 + 2/3.0 * 1/3.0)
+        self.assert_property("avrg_p", 1/1.0 * 1/3.0 + 2/3.0 * 1/3.0)
     
     def test_macro_evaluation(self):
         protein_results = [
@@ -82,11 +84,11 @@ class CalculationTests(CalculationAssertions):
         precision = sum(p.precision for p in protein_results) / N
         recall = sum(p.recall for p in protein_results) / N
         f_score = sum(p.f_score for p in protein_results) / N
-        auc_ipr = sum(p.auc_ipr for p in protein_results) / N
+        avrg_p = sum(p.avrg_p for p in protein_results) / N
         self.assert_property("precision", precision)
         self.assert_property("recall", recall)
         self.assert_property("f_score", f_score)
-        self.assert_property("auc_ipr", auc_ipr)
+        self.assert_property("avrg_p", avrg_p)
     
     @staticmethod
     def random_protein_result():
@@ -100,7 +102,7 @@ class CalculationTests(CalculationAssertions):
 def calculation_modules():
     module_path = 'biocreative.evaluation.calculation.tests'
     module_names = [
-        'article_auc_ipr',
+        'article_auc_pr',
         'article_mcc',
         'evaluation',
         'hits',

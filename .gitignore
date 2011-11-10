@@ -1,4 +1,6 @@
 build
 dist
 bc_evaluation-*
+*.pyc
+.idea
 MANIFEST

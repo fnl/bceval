@@ -14,7 +14,7 @@ import os.path as p
 class Defaults(object):
     "Global program defaults."
     
-    SKIP_EMPTY_RESULTS = True
+    SKIP_EMPTY_RESULTS = False
     PLOT_RESULT = False
     RESULT_ORDER = 11 # 001->conf; 010->rank; 100->line order
     # the three flags can be combined, the latter taking precedence over

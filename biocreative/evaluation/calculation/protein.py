@@ -34,6 +34,21 @@ class ProteinEvaluation(AbstractEvaluation):
             self.hits.fp += 1
     
     @property
+    def avrg_p(self):
+        """
+        Average precision score for the evaluation calculated from the
+        precision, recall values using a geometric curve approximation.
+        """
+        avrg_p = 0.0
+        last_r = 0.0
+
+        for p, r in self.yield_precision_recall_pairs():
+            avrg_p += p * (r - last_r)
+            last_r = r
+
+        return avrg_p
+    
+    @property
     def f_score(self):
         "Balanced (beta=1.0) F-measure for the Hit set."
         p = self.precision

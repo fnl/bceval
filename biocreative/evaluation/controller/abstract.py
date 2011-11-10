@@ -1,12 +1,12 @@
 import logging
 
 class AbstractEvaluator(object):
-    "Abstract implementation of the evaluation process."
+    """Abstract implementation of the evaluation process."""
     
     def __init__(self, cutoff):
         self.cutoff = cutoff
-        self.primary_eval = None # macro for INT/IPT, AUC iP/R for ACT
-        self.secondary_eval = None # micro for INT/IPT, MCC+Acc for ACT
+        self.primary_eval = None # micro for INT/IPT, AUC P/R for ACT
+        self.secondary_eval = None # macro for INT/IPT, MCC+Acc for ACT
         self.results = None
         self.gold_standard = None
         self.logger = logging.getLogger("AbstractEvaluator")

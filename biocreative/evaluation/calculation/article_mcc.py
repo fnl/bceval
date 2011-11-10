@@ -2,7 +2,7 @@ from math import sqrt
 
 from biocreative.evaluation.calculation.evaluation import AbstractEvaluation
 
-class ArticleMCCEvaluation(AbstractEvaluation):
+class ArticleMccEvaluation(AbstractEvaluation):
     "Implementation for the ACT MCC and Accuracy evaluation."
     
     def evaluate(self, result_item, std_item, cutoff):

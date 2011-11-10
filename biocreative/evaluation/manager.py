@@ -24,7 +24,7 @@ class Manager(object):
         self.po_map = None
     
     def load_gold_standard(self, gs_iterator):
-        "Load the gold standard from the given data iterator."
+        """Load the gold standard from the given data iterator."""
         self.gold_standard.load_from(gs_iterator)
     
     def do_homonym_ortholog_mapping(self, mapping_dict):
@@ -84,8 +84,9 @@ class Manager(object):
         
         if debug:
             return gold_standard, results
-        
-        controller = controller_factory(self.evaluation_type)(params.cutoff)
+
+        controller_class = controller_factory(self.evaluation_type)
+        controller = controller_class(params.cutoff)
         
         # ===============================================
         # ==== The actual evaluation continues here. ====

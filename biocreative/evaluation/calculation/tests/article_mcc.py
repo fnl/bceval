@@ -4,15 +4,15 @@ from math import sqrt
 from mock import patch
 
 from biocreative.evaluation.calculation.article_mcc \
-    import ArticleMCCEvaluation
+    import ArticleMccEvaluation
 from biocreative.evaluation.calculation.tests.test_helpers \
     import Constants as C, CalculationAssertions
 
-class ArticleMCCEvaluationTest(CalculationAssertions):
+class ArticleMccEvaluationTest(CalculationAssertions):
     
     @patch('biocreative.evaluation.calculation.hits.Hits', spec=True)
     def setUp(self, unused):
-        self.evaluator = ArticleMCCEvaluation()
+        self.evaluator = ArticleMccEvaluation()
         
         for attr in C.HITS_ATTRIBUTES:
             setattr(self.evaluator.hits, attr, 2)

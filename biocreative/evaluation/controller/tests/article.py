@@ -11,18 +11,18 @@ class ArticleEvaluatorTest(unittest.TestCase):
     
     calcpath = 'biocreative.evaluation.calculation.'
     
-    @patch(calcpath + 'article_auc_ipr.ArticleAUCiPREvaluation', spec=True)
-    @patch(calcpath + 'article_mcc.ArticleMCCEvaluation', spec=True)
-    def setUp(self, auc_ipr_mock, mcc_mock):
+    @patch(calcpath + 'article_auc_pr.ArticleAucPrEvaluation', spec=True)
+    @patch(calcpath + 'article_mcc.ArticleMccEvaluation', spec=True)
+    def setUp(self, avrg_p_mock, mcc_mock):
         self.eval = ArticleEvaluator(0)
-        self.auc_ipr_mock = auc_ipr_mock
-        auc_ipr_mock.hits = Mock(spec=Hits)
+        self.avrg_p_mock = avrg_p_mock
+        avrg_p_mock.hits = Mock(spec=Hits)
         self.mcc_mock = mcc_mock
         mcc_mock.hits = Mock(spec=Hits)
         self.logger_mock = self.eval.logger = Mock()
     
     def test_init_state(self):
-        self.assertEqual(self.auc_ipr_mock.call_count, 1)
+        self.assertEqual(self.avrg_p_mock.call_count, 1)
         self.assertEqual(self.mcc_mock.call_count, 1)
         self.assertEqual(type(self.eval.primary_eval), Mock)
         self.assertEqual(type(self.eval.secondary_eval), Mock)

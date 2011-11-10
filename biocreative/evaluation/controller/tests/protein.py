@@ -30,9 +30,9 @@ class ProteinEvaluatorTest(unittest.TestCase):
     @patch('__builtin__.len')
     def test_prepare(self, len_mock):
         # SETUP
-        self.eval.secondary_eval = Mock(spec=ProteinEvaluation)
-        self.eval.secondary_eval.hits = Mock(spec=Hits)
-        self.eval.secondary_eval.hits.fn = 15
+        self.eval.primary_eval = Mock(spec=ProteinEvaluation)
+        self.eval.primary_eval.hits = Mock(spec=Hits)
+        self.eval.primary_eval.hits.fn = 15
         gs_mock = Mock(spec=ProteinDataDict)
         results_mock = Mock(spec=ProteinDataDict)
         # use distinct return value to make sure things are set up right:
@@ -48,7 +48,7 @@ class ProteinEvaluatorTest(unittest.TestCase):
             [ ( (results_mock,), {} ), ( (gs_mock,), {} ) ]
         )
         self.assert_called_once_with(gs_mock.true_items)
-        self.assert_called_once_with(self.eval.secondary_eval.set_fn, 10)
+        self.assert_called_once_with(self.eval.primary_eval.set_fn, 10)
         self.assert_called_once_with(
             self.logger_mock.debug, "INT/IPT evaluation: 15 GS annotations"
         )
@@ -64,9 +64,9 @@ class ProteinEvaluatorTest(unittest.TestCase):
     def test_process_doi(self):
         self.eval.gold_standard = {1: [1,2,3]}
         self.eval.results = {1: [1]}
-        self.assertEqual(len(self.eval.primary_eval), 0)
+        self.assertEqual(len(self.eval.secondary_eval), 0)
         self.eval._process_doi(1)
-        protein_eval = self.eval.primary_eval[0]
+        protein_eval = self.eval.secondary_eval[0]
         self.assertEqual(type(protein_eval), ProteinEvaluation)
         self.assertEqual(protein_eval.doi, 1)
         self.assertEqual(protein_eval.hits.tp, 1)
@@ -78,7 +78,7 @@ class ProteinEvaluatorTest(unittest.TestCase):
         self.eval.results = {'a': [4,5,6], 'b': [4,5,6], 'c': [4,5,6]}
         self.eval.cutoff = 2
         self.eval._process_micro_doi = Mock()
-        self.eval.secondary_eval.store_p_at_current_r = Mock()
+        self.eval.primary_eval.store_p_at_current_r = Mock()
         # RUN THE TEST
         self.eval._process_micro_scores()
         # ASSERT RESULTS
@@ -94,16 +94,16 @@ class ProteinEvaluatorTest(unittest.TestCase):
             self.eval._process_micro_doi.call_args_list, result_list
         )
         self.assertEqual(
-            self.eval.secondary_eval.store_p_at_current_r.call_count, 2
+            self.eval.primary_eval.store_p_at_current_r.call_count, 2
         )
     
     def test_process_micro_doi(self):
-        self.eval.secondary_eval.evaluate_item = Mock()
+        self.eval.primary_eval.evaluate_item = Mock()
         self.eval.results = {1: [1,2,3]}
         self.eval.gold_standard = {1: [1,]}
         self.eval._process_micro_doi(1, 1)
         self.assert_called_once_with(
-            self.eval.secondary_eval.evaluate_item, 2, [1,]
+            self.eval.primary_eval.evaluate_item, 2, [1,]
         )
     
     def test_process_micro_doi_with_index_error(self):
@@ -122,9 +122,9 @@ class ProteinEvaluatorTest(unittest.TestCase):
         gold_standard.true_items.return_value = 3
         gold_standard.get.return_value = [3]
         self.eval.gold_standard = gold_standard
-        self.eval.secondary_eval = Mock(spec=ProteinEvaluation)
-        self.eval.secondary_eval.hits = Mock(spec=Hits)
-        self.eval.secondary_eval.hits.fn = 3
+        self.eval.primary_eval = Mock(spec=ProteinEvaluation)
+        self.eval.primary_eval.hits = Mock(spec=Hits)
+        self.eval.primary_eval.hits.fn = 3
         len_mock.return_value = 3
         # RUN THE TEST
         self.eval._prepare(results, gold_standard)
@@ -132,13 +132,13 @@ class ProteinEvaluatorTest(unittest.TestCase):
         # just make sure everything got called as often as this setup
         # would suggest; details are ensured in the tests before
         self.assertEqual(len_mock.call_count, 6)
-        self.assertEqual(self.eval.secondary_eval.set_fn.call_count, 1)
+        self.assertEqual(self.eval.primary_eval.set_fn.call_count, 1)
         self.assertEqual(
-            self.eval.secondary_eval.store_p_at_current_r.call_count, 3
+            self.eval.primary_eval.store_p_at_current_r.call_count, 3
         )
         self.assertEqual(gold_standard.get.call_count, 9)
         self.assertEqual(
-            self.eval.secondary_eval.evaluate_item.call_count, 8
+            self.eval.primary_eval.evaluate_item.call_count, 8
         )
         self.assertEqual(self.eval._dois, ['a', 'c'])
     

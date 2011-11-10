@@ -11,8 +11,8 @@ class ProteinEvaluator(AbstractEvaluator):
     
     def reset(self):
         "Reset the internal state to reuse the evaluator."
-        self.primary_eval = ProteinMacroEvaluation()
-        self.secondary_eval = ProteinEvaluation()
+        self.primary_eval = ProteinEvaluation()
+        self.secondary_eval = ProteinMacroEvaluation()
         self.results = None
         self.gold_standard = None
         self.logger = logging.getLogger("ProteinEvaluator")
@@ -23,10 +23,10 @@ class ProteinEvaluator(AbstractEvaluator):
             "the entries in the evaluation result and the gold standard " \
             "do not match"
         
-        self.secondary_eval.set_fn(gold_standard.true_items())
+        self.primary_eval.set_fn(gold_standard.true_items())
         self.logger.debug(
             "INT/IPT evaluation: %i GS annotations" % 
-            self.secondary_eval.hits.fn
+            self.primary_eval.hits.fn
         )
         self._process_micro_scores()
     
@@ -39,6 +39,8 @@ class ProteinEvaluator(AbstractEvaluator):
             len(result_list) for result_list in self.results.values()
         ]
         max_rank_in_results = max(result_sizes) if len(result_sizes) else 0
+        self.logger.info("longest result set has %i annotations",
+                         max_rank_in_results)
         
         if self.cutoff and self.cutoff < max_rank_in_results:
             max_rank_in_results = self.cutoff
@@ -49,7 +51,7 @@ class ProteinEvaluator(AbstractEvaluator):
             
             # Calcuate & store the current P/R value
             # at this rank over all documents
-            self.secondary_eval.store_p_at_current_r()
+            self.primary_eval.store_p_at_current_r()
     
     def _process_micro_doi(self, doi, rank):
         "Evaluate each result at a given rank for all documents at once."
@@ -63,7 +65,7 @@ class ProteinEvaluator(AbstractEvaluator):
             self._dois.remove(doi)
         else:
             # evaluate the result at the current rank
-            self.secondary_eval.evaluate_item(item, std_items)
+            self.primary_eval.evaluate_item(item, std_items)
     
     def _process_doi(self, doi):
         "Evaluate the individual performance for the given article."
@@ -72,5 +74,5 @@ class ProteinEvaluator(AbstractEvaluator):
         std_items = self.gold_standard[doi]
         result_doc = ProteinEvaluation(doi=doi, fn=len(std_items))
         result_doc.evaluate(result_items, std_items, self.cutoff)
-        self.primary_eval.append(result_doc)
+        self.secondary_eval.append(result_doc)
     

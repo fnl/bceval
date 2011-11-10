@@ -21,27 +21,52 @@
 
 Official BioCreative evaluation script.
 For help on the script options use -h/--help.
+Single-char options can be combined (instead of "-c -e", write "-ce").
+
+Evaluation functions
+====================
+
+For ACT, the official evaluations use Matthew's Correlation Coefficient (MCC)
+to evaluate classification performance and the area under the precision-
+recall curve (AUC P/R) for the ranking performance. In addition, specificity,
+sensitivity, and accuracy can be measured.
+
+For all other tasks, the official evaluations use the balanced F-measure
+(F-Score) to evaluate classification performance and Average Precision (AP)
+to measure average ranking performance across all articles. AP is generated
+from the precision values calculated for the total TP and FP counts summed up
+from all articles at each rank. In addition, precision and recall are
+provided, and the macro-averaged results of all these functions with the
+corresponding standard deviations can be measured, too (Although, commonly
+the std. dev. will be too large and thus the average has no meaningful
+interpretation.)
+
+For the ACT the AUC P/R, and for the other tasks the Avrg. Precision can be
+plotted if matplotlib is installed. Any evaluation can also be made excluding
+the articles not reported by the classifier (results), using the "-e" option.
 
 Input file formats
 ==================
 
-Result files have to an official BioCreative result format used in the
-challenge.
-You can send multiple result files to the tool, either by listing one after
-the other (multiple arguments) or using the wildcard operators of your OS
-(usually, * and ?) in the path to the file(s).
+Result files have to conform to the an official BioCreative result format
+used in the challenge.
+It is possible send multiple result files to this tool, either by listing one
+after the other (multiple arguments) or using the wildcard operators of your
+OS (usually, * and ?) in the path to the file(s).
 
 Notes about all input file formats:
 Each column has to be separated by tabs, each row by newline characters.
 Columns allowed for each evaluation task are listed below; columns starting
 with "-" are mandatory, "+" are optional. Note that the format and content
-is strict, i.e. your input files may only and exclusively contain the columns
-described here. If you have additional data anywhere in these files, you will
-get unpredictable errors and/or warnings. No matter wether an optional item
-is used or not, the order in which the columns are presented has to be
-maintained (note that not using the optional columns usually requires the
-use of a special command line parameter). Gold standard files will NOT have
-the optional columns, obviously.
+can be ensured with the strict option, i.e., when using that option the input
+files may only and exclusively contain the columns described here. If you
+have malformed data anywhere it is possible to get unpredictable results,
+errors and/or warnings. The strict option should help ensure correct file
+formats. No matter wether an optional item is used or not, the order in which
+the columns are presented here has to be maintained. Note that not using the
+optional columns requires the use of a special command line
+parameter (-c for confidence only, -r for rank only, or -l for none). Gold
+standard files must NOT have these optional columns, obviously.
 
 ACT - article classification format:
 - article identifier (DOI, PMID, etc. - in essence, some unique ID)
@@ -70,45 +95,8 @@ IPT - protein pairs format:
 
 Protein pairs special note:
 It is of no relevance in which order a pair is given ("A B" or "B A"),
-however, the program will ensure that each pair is unique for a given article.
-
-Optional file formats
-=====================
-
-Homonym ortholog map:
-For any protein identifier in the gold standard (INT, IPT), a list of
-homonym orthologs can be given; any identifier in the results that can be
-mapped back to the correct gold standard entry with this mapping file will be
-counted as TP; If a result can be mapped to several gold standard
-annotations, all these mappings are added; If any mapping operations resulted
-in multiple annotations of the same identifier/pair on the article, the
-highest ranking annotation is kept and all others are discarded.
-File format: Gold standard accession (string) followed by a tabulator,
-followed by comma-separated homonym ortholog accessions (strings)
-
-[Protein] Organism filtering map:
-This map should contain all taxonomic IDs of the used UniProt release for all
-accessions and at least must contain the protein identifiers found in the
-gold standard. For each article, all relevant taxonomic identifiers are
-established and then any protein identifier found in the results that does
-not map to one of those taxonomic IDs is removed. Also, if the protein
-identifier does not have a mapping according to this list, it is removed.
-Note that due to the large size of UniProt, loading this file can take quite
-some time on slow machines.
-File format: UniProt accession (string) followed by a tabulator, followed by
-a taxonomic identifier (in essence, any string).
-
-Both the ortholog mapping and organism filtering can either be carried out
-each individually or in concert, i.e., first all possible mappings get made,
-then all proteins that still do not belong to the correct organisms _after_
-the mapping step are filtered. Note that this double step produces somewhat
-optimized results: this is the best achievable result if a human being would
-1) first chose the correct organisms and then
-2) also chose the correct mappings.
-On the contrary, evaluating just with either mapping or filtering exclusively
-produces results where the simulated human interaction is limited to choosing
-the correct organisms and might be of more technical interest, while the
-combination is to be understood as the "maximally achievable performance".
+however, the program will ensure that each pair is unique for a given article
+and reports an error if not.
 
 Output formats (command line options)
 =====================================
@@ -117,26 +105,15 @@ See the output of "-h"/"--help" for a list of all command line options and
 their description.
 In summary, it is possible to generate:
 a) a verbose result report (default)
+c) a tab-separated list of all scores, including a header line
 b) just the single numeric value of a single performance measure
-c) a tab-separated list of precision/recall values, including a third column
-   which is either empty or starred (i.e., has the asterisk character in it)
-   if the column is one of the interpolation points (for AUC iP/R).
-d) a plot of the AUC iP/R curve; requires matplotlib installed; see:
-   http://matplotlib.sourceforge.net/
-e) "debug" output - input files after pre-processing, but before the actual
-   calculation; e.g., to print the updated result file after ranks have been
-   added (if they were not added), or after homonym ortholog mapping or
-   organism filtering.
-g) tabulated output with the input file as the first column;
-   For ACT, the other columns report:
-   col 2-5: TP, FP, FN, TN (relative to classification)
-   col 6-9: specificity, sensitivity, accuracy, Matthew's Correlation Coeff.
-   col 10-11: precision at full recall (if applicable), AUC iP/R
-   For INT and IPT, the other columns report:
-   col 2: number of evaluated documents
-   col 3-5: global hits: TP, FP, FN
-   col 6-9: mIcro-avrgd. precision, recall, F-score, AUC iP/R
-   col 10-13: mAcro-avrgd. precision, recall, F-score, AUC iP/R
+c) a tab-separated list of all precision-recall values
+d) a plot of the AUC P/R curve (ACT) or AP step-curve (other tasks); this
+   requires matplotlib installed; see: http://matplotlib.sourceforge.net/
+e) debugging output - of input files after pre-processing, but before the
+   actual calculations; e.g., to print the updated result file after ranks
+   have been added (if they were not given), or after homonym ortholog
+   mapping or organism filtering.
 
 Comments and observations
 =========================
@@ -144,43 +121,89 @@ Comments and observations
 By default, the script assumes: INT/protein identifier data, where the
 results have a column for rank and confidence scores, using verbose output.
 To add to/change this behavior use one or more of the many the command line
-options. In addition, with the "-error", "--info" and "--debug" flags, the
+options. In addition, with the "--error", "--info" and "--debug" flags, the
 verbosity of the program (logs to STDERR by default) can be influenced.
-Especially if you are getting errors when running the program instead of
-seeing a result, it is recommended to use --info to get more logging messages
-about what is going on.
+Especially if getting errors when running the program instead of seeing a
+result, it is recommended to use --info to get more logging messages about
+what exactly is wrong.
 
-The line ordering option (-l, --line) means that no rank was given and
-instead the program should use the intrinsic line ordering of the input file
-as the rank. For INT/normalizations and IPT/pairs this is straightforward.
-For ACT however remember that the script will first order the highest ranking
-true classification to the lowest true classification and then from the
-LOWEST false classification to the HIGHEST (i.e., reversing the order). This
-means, if you use line ordering, an input like this:
+The line ordering option (-l, --line) means that no rank or confidence was
+given and instead the program should use the intrinsic line ordering of the
+input file as the rank.
+
+For INT/normalizations and IPT/pairs ranking is straightforward.
+For measuring ACT AUC P/R, however, the script will traverse the results from
+the highest ranking true classification to the lowest true classification and
+then from the LOWEST ranking false classification to the HIGHEST (i.e.,
+reversing the order). This means, if only line ordering is used, an input
+file like this:
 A   t
 B   f
 C   t
 D   f
 will result in the following order: A, C, D, B. To use only the confidence
 scores to order your results, simply use the -c/--confidence flag only
-(i.e., without the -l or -r flag).
+(i.e., without the -l or -r flag). Again, for ACT ranking evaluation, the
+same principle of reverse ordering for the negative results is applied.
 
 Note that for ACT evaluation, specificity, sensitivity, accuracy, and
 Matthew's Correlation Coefficient are calculated by using the classification
-and these values are not influenced by the rank, while AUC iP/R only uses the
+and these values are not influenced by ranks, while AUC P/R only uses the
 rank but ignores the actual classification of the result.
-For easier use, single-char options can be combined; E.g., to evaluate an
-ACT result with confidence ordering, outputting the AUC iP/R score, and
-plotting the curve (remember, requires a working installation of matplotlib),
-use:
-bc-evaluate -cia --plot my_act_result_file act_gold_standard_file
-If you would have had confidence values, but wanted to use line ordering on
-top of those values, you would change "-cia" to "-clia"; see the -h/--help
-output to understand why.
+
+Optional evaluations
+====================
+
+Both the ortholog mapping and organism filtering can either be carried out
+each individually or in concert, i.e., first all possible mappings get made,
+then all proteins that still do not belong to the correct organisms _after_
+the mapping step are filtered. Note that this double step produces somewhat
+over-optimized results: this is the best achievable result if a human being
+would
+
+1) first chose the correct organisms and then
+2) (!) also chose the correct mappings.
+
+While evaluating filtering exclusively produces results where the simulated
+human interaction is limited to choosing the correct organisms only and
+therefore might be of more public interest, while mapping and the combined
+evaluation can be understood as a "maximized performance optimistic".
+
+Homonym ortholog mapping
+------------------------
+
+This evaluation helps detect possible errors in the protein name dictionary.
+
+For any protein identifier in the gold standard (INT, IPT), a list of
+homonym orthologs can be given; any identifier in the results that can be
+mapped back to a correct gold standard entry with this mapping file will be
+counted as TP; If a result can be mapped to several gold standard
+annotations, all these mappings are added; If any mapping operation results
+in multiple annotations of the same identifier/pair on the article, the
+highest ranking annotation is kept and all others are discarded.
+File format: Gold standard accession (string) followed by a tabulator,
+followed by comma-separated homonym ortholog accessions (strings)
+
+Organism filtering
+------------------
+
+This evaluation helps detect problems with establishing the focus organisms.
+
+The map should contain all taxonomic IDs of the used UniProt release for all
+accessions and at least must contain the protein identifiers found in the
+gold standard. For each article, all relevant taxonomic identifiers are
+established from the gold standard and then any protein identifier found in
+the results that does not map to one of those taxonomic IDs is removed.
+Also, if the protein identifier does not have a mapping according to this
+list, it is removed.
+Note that due to the large size of UniProt, loading this file can take quite
+some time on slow machines.
+File format: UniProt accession (string) followed by a tabulator, followed by
+a taxonomic identifier (in essence, any string).
 
 ========================================================
 Created by Florian Leitner on 2009-10-14 at CNIO.
-Copyright (c) 2009-2010 Florian Leitner. All rights reserved.
+Copyright (c) Florian Leitner. All rights reserved.
 License: GNU Public License, latest version."""
 
 import logging
@@ -199,24 +222,25 @@ from biocreative.evaluation.file_io.protein_organism import \
 from biocreative.evaluation.file_io.store import Files
 
 # all others
-from biocreative.evaluation.graphics import plot_ipr_curves
+from biocreative.evaluation.graphics import plot_avrg_p_curves
 from biocreative.evaluation.manager import Manager
 from biocreative.evaluation.parameters import Parameters
 from biocreative.evaluation.settings import Defaults, Evaluate
 
 __author__ = "Florian Leitner"
-__version__ = "2.3.1"
+__version__ = "3.0.0"
 
 # ===================
 # = Output Handling =
 # ===================
 
 class Output(object):
-    "Output modes available by this script."
+    """Output modes available by this script."""
     
     verbose = 'verbose'
     tabular = 'tabular'
-    auc_ipr = 'auc_ipr'
+    avrg_p = 'avrg_p'
+    auc_pr = 'auc_pr'
     f_score = 'f_score'
     recall = 'recall'
     precision = 'precision'
@@ -237,7 +261,7 @@ class Output(object):
     
 
 class OutputHandler(object):
-    "Formated output to a given file descriptor/handle."
+    """Formated output to a given file descriptor/handle."""
     
     def __init__(
         self, filepath, evaluation_type,
@@ -245,10 +269,8 @@ class OutputHandler(object):
     ):
         if evaluation_type == Evaluate.ACT:
             self._print_data = getattr(self, "_" + output_mode + "_ACT")
-            self._select = lambda main, secondary: main
         else:
             self._print_data = getattr(self, "_" + output_mode)
-            self._select = lambda main, secondary: secondary
         
         self.logger = logging.getLogger('OutputHandler')
         self.file = filepath
@@ -273,25 +295,26 @@ class OutputHandler(object):
         
         self.file.close()
     
-    def print_data(self, main, secondary, result_name=None):
+    def print_data(self, primary, secondary, result_name=None):
         self.logger.debug(
             "calcuating and printing %s data" % self.output_mode
         )
         self.result_name = result_name
         self._fh = self.file.open(mode='a')
-        self._print_data(main, secondary)
+        self._print_data(primary, secondary)
         self.file.close()
         
         if self.plot_result:
-            evaluation = self._select(main, secondary)
-            plot_ipr_curves(evaluation, self.evaluation_type)
+            plot_avrg_p_curves(primary, self.evaluation_type)
     
-    def _verbose_ACT(self, ipr_data, mcc_acc_data):
+    def _verbose_ACT(self, pr_data, mcc_acc_data):
         hits = mcc_acc_data.hits
         self.__p("=======================%s=" % (
             "=" * len(self.result_name)
         ))
         self.__p("Evaluation result for '%s'" % self.result_name)
+        print >> self._fh
+        self.__p("Classification results")
         print >> self._fh
         self.__p("TP: %3i\tFP: %3i\tFN: %3i\tTN: %3i" % (
             hits.tp, hits.fp, hits.fn, hits.tn
@@ -303,20 +326,20 @@ class OutputHandler(object):
         self.__p("Matthew's correlation coefficient:\t%.5f" % 
             mcc_acc_data.mcc_score
         )
-        hits = ipr_data.hits
-        assert hits.fn == 0, "iP/R data has FN counts"
-        assert hits.tn == 0, "iP/R data has TN counts"
-        p_at_full_r = ipr_data.p_at_full_r
+        hits = pr_data.hits
+        assert hits.fn == 0, "P/R data has FN counts"
+        assert hits.tn == 0, "P/R data has TN counts"
+        p_at_full_r = pr_data.p_at_full_r
         print >> self._fh
-        self.__p("TP: %3i\tFP: %3i" % (hits.tp, hits.fp))
+        self.__p("Ranking results")
+        print >> self._fh
         self.__p("P at full R:\t%s" % (
             "%.5f" % p_at_full_r if p_at_full_r is not None else "n/a"
         ))
-        print  >> self._fh,"AUC iP/R:\t%.5f" % ipr_data.auc_ipr
-    
-    def _verbose(self, macro_data, micro_data):
+        print  >> self._fh, "AUC P/R:\t%.5f" % pr_data.auc_pr
+
+    def _verbose(self, micro_data, macro_data):
         hits = micro_data.hits
-        hits2 = macro_data.hits
         self.__p("=======================%s=" % (
             "=" * len(self.result_name)
         ))
@@ -328,30 +351,38 @@ class OutputHandler(object):
             "Evaluated results:    %9i" % (hits.tp + hits.fp)
         )
         print >> self._fh
-        assert hits.tn == 0, "evaluation data has TN counts"
         self.__p(
             "Hits\tTP: %3i FP: %3i FN: %3i" % (hits.tp, hits.fp, hits.fn)
         )
+        assert hits.tn == 0, "evaluation data has TN counts"
         print >> self._fh
-        self.__p("Global test-set results (micro-averaged)")
-        self.__verbose_helper("Micro", micro_data)
+        self.__p("Macro-averaged results")
         print >> self._fh
-        self.__p("Average per-document results (macro-averaged)")
-        self.__p("StdDev\tprecs.:\t%.5f\trecall:\t%.5f\tf-scr.:\t%.5f" % (
+        self.__p("StdDev\tprecs.:\t%.5f\trecall:\t%.5f" % (
             macro_data.std_dev('precision'),
-            macro_data.std_dev('recall'),
-            macro_data.std_dev('f_score')
+            macro_data.std_dev('recall')
         ))
-        self.__p("StdDev\tAUC iP/R:\t%.5f" % macro_data.std_dev('auc_ipr'))
-        self.__verbose_helper("Macro", macro_data)
-    
-    def __verbose_helper(self, kind, data):
-        self.__p("%s\tprecs.:\t%.5f\trecall:\t%.5f\tf-scr.:\t%.5f" % (
-            kind, data.precision, data.recall, data.f_score
+        self.__p("StdDev\tF-scr.:\t%.5f\tAvrg P:\t%.5f" % (
+            macro_data.std_dev('f_score'),
+            macro_data.std_dev('avrg_p')
         ))
-        self.__p("%s\tAUC iP/R:\t%.5f" % (kind, data.auc_ipr))
-        
-    
+        print >> self._fh
+        self.__p("Macro\tprecs.:\t%.5f\trecall:\t%.5f" % (
+            macro_data.precision, macro_data.recall, 
+        ))
+        self.__p("Macro\tF-scr.:\t%.5f\tAvrg P:\t%.5f" % (
+            macro_data.f_score, macro_data.avrg_p
+        ))
+        print >> self._fh
+        self.__p("Baseline results")
+        print >> self._fh
+        self.__p("precs.:\t%.5f\trecall:\t%.5f" % (
+            micro_data.precision, micro_data.recall
+        ))
+        self.__p("F-scr.:\t%.5f\tAvrg P:\t%.5f" % (
+            micro_data.f_score, micro_data.avrg_p
+        ))
+
     def _yield_string_formated_items(self, values):
         for item in values:
             if isinstance(item, float):
@@ -360,20 +391,20 @@ class OutputHandler(object):
                 yield "%5i" % item
             elif isinstance(item, basestring):
                 yield item
-            elif item == None:
+            elif item is None:
                 yield "n/a"
             else:
-                raise RuntimeError, "unknonw %s ('%s') to format" % (
+                raise RuntimeError, "unknown %s ('%s') to format" % (
                     str(type(item)), str(item)
                 )
     
-    def _tabular_ACT(self, ipr_data, mcc_acc_data):
+    def _tabular_ACT(self, pr_data, mcc_acc_data):
         hits = mcc_acc_data.hits
         items = [
             self.result_name, hits.tp, hits.fp, hits.fn, hits.tn,
             mcc_acc_data.specificity, mcc_acc_data.sensitivity,
             mcc_acc_data.accuracy, mcc_acc_data.mcc_score,
-            ipr_data.p_at_full_r, ipr_data.auc_ipr
+            pr_data.p_at_full_r, pr_data.auc_pr,
         ]
         self.__p("\t".join(self._yield_string_formated_items(items)))
     
@@ -382,51 +413,59 @@ class OutputHandler(object):
         items = [
             self.result_name, len(macro_data), # = num evaluated documents
             hits.tp, hits.fp, hits.fn,
-            micro_data.precision, micro_data.recall, micro_data.f_score,
-            micro_data.auc_ipr,
-            macro_data.precision, macro_data.recall, macro_data.f_score,
-            macro_data.auc_ipr,
+            macro_data.precision, macro_data.std_dev('precision'),
+            macro_data.recall, macro_data.std_dev('recall'),
+            macro_data.f_score, macro_data.std_dev('f_score'),
+            macro_data.avrg_p, macro_data.std_dev('avrg_p'),
+            micro_data.precision, micro_data.recall,
+            micro_data.f_score, micro_data.avrg_p,
         ]
         self.__p("\t".join(self._yield_string_formated_items(items)))
+
+    #noinspection PyUnusedLocal
+    def _avrg_p(self, macro_data, micro_data):
+        self.__p(micro_data.avrg_p)
     
-    def _auc_ipr_ACT(self, ipr_data, mcc_acc_data):
-        self.__p(ipr_data.auc_ipr)
-    
-    def _auc_ipr(self, macro_data, micro_data):
-        self.__p(macro_data.auc_ipr)
-    
-    def _mcc_score_ACT(self, ipr_data, mcc_acc_data):
+    #noinspection PyUnusedLocal
+    def _auc_pr_ACT(self, pr_data, mcc_acc_data):
+        self.__p(pr_data.auc_pr)
+
+    #noinspection PyUnusedLocal
+    def _mcc_score_ACT(self, pr_data, mcc_acc_data):
         self.__p(mcc_acc_data.mcc_score)
     
+    #noinspection PyUnusedLocal
     def _f_score(self, macro_data, micro_data):
-        self.__p(macro_data.f_score)
+        self.__p(micro_data.f_score)
     
+    #noinspection PyUnusedLocal
     def _recall(self, macro_data, micro_data):
-        self.__p(macro_data.recall)
+        self.__p(micro_data.recall)
     
+    #noinspection PyUnusedLocal
     def _precision(self, micro_data, macro_data):
-        self.__p(macro_data.precision)
+        self.__p(micro_data.precision)
     
-    def _sensitivity_ACT(self, ipr_data, mcc_acc_data):
+    #noinspection PyUnusedLocal
+    def _sensitivity_ACT(self, pr_data, mcc_acc_data):
         self.__p(mcc_acc_data.sensitivity)
     
-    def _specificity_ACT(self, ipr_data, mcc_acc_data):
+    #noinspection PyUnusedLocal
+    def _specificity_ACT(self, pr_data, mcc_acc_data):
         self.__p(mcc_acc_data.specificity)
     
-    def _accuracyACT(self, ipr_data, mcc_acc_data):
+    #noinspection PyUnusedLocal
+    def _accuracy_ACT(self, pr_data, mcc_acc_data):
         self.__p(mcc_acc_data.accuracy)
     
-    def _pr_values_ACT(self, ipr_data, mcc_acc_data):
-        self._pr_values(None, ipr_data)
+    #noinspection PyUnusedLocal
+    def _pr_values_ACT(self, pr_data, mcc_acc_data):
+        self._pr_values(pr_data, mcc_acc_data)
     
-    def _pr_values(self, macro_data, micro_data):
-        ipr_values = micro_data.get_interpolated_pr_list()
-        
+    #noinspection PyUnusedLocal
+    def _pr_values(self, micro_data, macro_data):
         for p_r in micro_data.yield_precision_recall_pairs():
-            if p_r in ipr_values:
-                self.__p("%f\t%f\t*" % p_r)
-            else:
-                self.__p("%f\t%f\t" % p_r)
+            self.__p("%f\t%f" % p_r)
     
     def __p(self, data):
         print >> self._fh, data
@@ -436,7 +475,7 @@ class OutputHandler(object):
 # ========
 
 def main(args, opts):
-    "Main program entry point; args and opts as parsed by OptionParser."
+    """Main program entry point; args and opts as parsed by OptionParser."""
     logger = logging.getLogger("main")
     
     # SETUP
@@ -479,7 +518,7 @@ def main(args, opts):
     # read gold standard:
     try:
         manager.load_gold_standard(gs_iterator)
-    except Exception, e:
+    except Exception:
         logger.critical("evaluation failed while reading gold standard")
         logger.info("using wrong GS for this evaluation type?")
         
@@ -487,6 +526,16 @@ def main(args, opts):
             logger.exception("Exception Traceback")
         
         return 1
+    
+    if opts.output_mode == 'tabular' and \
+       not opts.debug_results and not opts.debug_gs:
+        if params.evaluation_type == Evaluate.ACT:
+            print "run\tTP\tFP\tFN\tTN\tspec\tsens\tacc\tmcc\tp_at_r\tpr"
+        else:
+            print "run\tdocs\tTP\tFP\tFN\t",
+            print "prec_m\tprec_sd\trec_m\trec_sd\t",
+            print "f1_m\tf1_sd\tap_ma\tap_sd",
+            print "\tprec\trec\tf1\tap"
     
     for result_file in file_store.results:
         results = Result_Reader(
@@ -498,7 +547,7 @@ def main(args, opts):
             # ======= The actual evaluation is done by this call. =======
             primary, secondary = manager.evaluate(results, params, debug)
             # ===========================================================
-        except Exception, e:
+        except Exception:
             logger.critical("evaluation failed for %s" % result_file)
             
             if logger.isEnabledFor(logging.DEBUG):
@@ -507,9 +556,9 @@ def main(args, opts):
             return 1
         
         if opts.debug_results:
-            if opts.CUTOFF_AT_RANK:
+            if params.cutoff:
                 for doi in secondary:
-                    secondary[doi] = secondary[doi][0:opts.CUTOFF_AT_RANK]
+                    secondary[doi] = secondary[doi][0:params.cutoff]
             
             output_handle.debug(secondary)
         elif opts.debug_gs:
@@ -526,12 +575,11 @@ def main(args, opts):
 # =============
 
 if __name__ == "__main__":
-    "Command line parsing setup."
-    
+    # Command line parsing setup
     usage = "usage: %prog [--options] <result file(s...)> <standard file>"
     parser = OptionParser(
         usage=usage, version=__version__, prog=os.path.basename(sys.argv[0]),
-        description=None, epilog=None, add_help_option=True
+        epilog="use -d or --documentation to read the instructions"
     )
     parser.set_defaults(EVALUATION_TYPE=Evaluate.INT)
     parser.set_defaults(output_mode=Output.verbose)
@@ -542,22 +590,22 @@ if __name__ == "__main__":
         help="show extensive documentation and exit"
     )
     parser.add_option(
-        "-a", "--ACT", action="store_const",
+        "--ACT", action="store_const",
         const=Evaluate.ACT, dest="EVALUATION_TYPE",
         help="evaluate ACT/articles [default: %default]"
     )
     parser.add_option(
-        "-n", "--INT", action="store_const",
+        "--INT", action="store_const",
         const=Evaluate.INT, dest="EVALUATION_TYPE",
         help="evaluate INT/normalizations [default: %default]"
     )
     parser.add_option(
-        "-m", "--IMT", action="store_const",
+        "--IMT", action="store_const",
         const=Evaluate.IMT, dest="EVALUATION_TYPE",
         help="evaluate IMT/method detection [default: %default]"
     )
     parser.add_option(
-        "-p", "--IPT", action="store_const",
+        "--IPT", action="store_const",
         const=Evaluate.IPT, dest="EVALUATION_TYPE",
         help="evaluate IPT/pairs [default: %default]"
     )
@@ -578,16 +626,16 @@ if __name__ == "__main__":
         help="ensure columns in result file (no additional columns)"
     )
     parser.add_option(
-        "--all", action="store_false",
-        default=Defaults.SKIP_EMPTY_RESULTS, dest="SKIP_EMPTY_RESULTS",
-        help="also evaluate documents without hits [default: %s]" % (
-            not Defaults.SKIP_EMPTY_RESULTS
-        )
-    )
-    parser.add_option(
         "-k", "--cutoff", action="store", type="int",
         default=Defaults.CUTOFF_AT_RANK, dest="CUTOFF_AT_RANK",
         help="only use CUTOFF results per document [default: all]"
+    )
+    parser.add_option(
+        "-e", "--exclude-missed-docs", action="store_true",
+        default=Defaults.SKIP_EMPTY_RESULTS, dest="SKIP_EMPTY_RESULTS",
+        help="do not evaluate documents without hits [default: %s]" % (
+            Defaults.SKIP_EMPTY_RESULTS
+        )
     )
     parser.add_option(
         "-v", "--verbose", action="store_const",
@@ -600,24 +648,39 @@ if __name__ == "__main__":
         help="print tabular output"
     )
     parser.add_option(
-        "-i", "--auc-ipr", action="store_const",
-        const=Output.auc_ipr, dest="output_mode",
-        help="print (macro-avrgd.) AUC iP/R only"
+        "--avrg-p", action="store_const",
+        const=Output.avrg_p, dest="output_mode",
+        help="print Average Precision only"
     )
     parser.add_option(
-        "-f", "--f-score", action="store_const",
+        "--f-score", action="store_const",
         const=Output.f_score, dest="output",
-        help="print (macro-avrgd.) F-score only"
+        help="print F-score only"
     )
     parser.add_option(
         "--recall", action="store_const",
         const=Output.recall, dest="output_mode", 
-        help="print (macro-avrgd.) recall only"
+        help="print recall only"
     )
     parser.add_option(
         "--precision", action="store_const",
         const=Output.precision, dest="output_mode",
-        help="print (macro-avrgd.) precision only"
+        help="print precision only"
+    )
+    parser.add_option(
+        "--mcc-score", action="store_const",
+        const=Output.mcc_score, dest="output_mode", 
+        help="print (ACT) Matthew's Corr. Coeff. only"
+    )
+    parser.add_option(
+        "--auc-pr", action="store_const",
+        const=Output.auc_pr, dest="output_mode",
+        help="print (ACT) AUC Precision/Recall only"
+    )
+    parser.add_option(
+        "--accuracy", action="store_const",
+        const=Output.accuracy, dest="output_mode", 
+        help="print (ACT) accuracy only"
     )
     parser.add_option(
         "--sensitivity", action="store_const",
@@ -630,20 +693,9 @@ if __name__ == "__main__":
         help="print (ACT) specificity only"
     )
     parser.add_option(
-        "--accuracy", action="store_const",
-        const=Output.accuracy, dest="output_mode", 
-        help="print (ACT) accuracy only"
-    )
-    parser.add_option(
-        "--mcc-score", action="store_const",
-        const=Output.mcc_score, dest="output_mode", 
-        help="print (ACT) Matthew's Correlation Coefficient only"
-    )
-    parser.add_option(
         "--pr-values", action="store_const",
         const=Output.pr_values, dest="output_mode",
-        help="print [micro (for INT/IPR)] P/R value pairs " \
-            "and star [*] interpolation points"
+        help="print P/R value pairs"
     )
     parser.add_option(
         "--output", action="store", type="string",
@@ -660,8 +712,8 @@ if __name__ == "__main__":
     parser.add_option(
         "--plot", action="store_true", default=Defaults.PLOT_RESULT,
         dest="PLOT_RESULT",
-        help="plot the (i)P/R curve (micro for INT/IPT) [default: " \
-            "%default] (requires matplotlib installed)"
+        help="plot the AP or P/R curve [default: " \
+            "%default]\t(requires matplotlib installed)"
     )
     parser.add_option(
         "--error",
@@ -712,21 +764,21 @@ if __name__ == "__main__":
     if opts.EVALUATION_TYPE == Evaluate.ACT:
         opts.SKIP_EMPTY_RESULTS = False
         
-        if opts.CUTOFF_AT_RANK != 0:
-            parser.error("option --cutoff n/a for ACT/article evaluation")
-        elif opts.output in (
-            Output.recall, Output.precision, Output.f_score
+        if opts.CUTOFF_AT_RANK:
+            parser.error("cutoff n/a to ACT evaluation")
+        elif opts.output_mode in (
+            Output.recall, Output.precision, Output.f_score, Output.avrg_p
         ):
             parser.error(
-                "--%s n/a for ACT/interaction evaluation" % opts.output
+                "%s n/a to ACT evaluation" % opts.output_mode
             )
     else:
-        if opts.output in (
+        if opts.output_mode in (
             Output.sensitivity, Output.specificity, Output.accuracy,
-            Output.mcc_score
+            Output.mcc_score, Output.auc_pr
         ):
             parser.error(
-                "--%s n/a to INT, IMT, and IPT evaluation" % opts.output
+                "%s n/a to INT, IMT, or IPT evaluation" % opts.output_mode
             )
     
     sys.exit(main(args, opts))

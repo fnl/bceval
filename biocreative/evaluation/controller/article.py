@@ -1,6 +1,6 @@
 import logging
 
-from biocreative.evaluation.calculation import article_auc_ipr, article_mcc
+from biocreative.evaluation.calculation import article_auc_pr, article_mcc
 
 from biocreative.evaluation.controller.abstract import AbstractEvaluator
 
@@ -9,8 +9,8 @@ class ArticleEvaluator(AbstractEvaluator):
     
     def reset(self):
         "Reset the internal state to reuse the evaluator."
-        self.primary_eval = article_auc_ipr.ArticleAUCiPREvaluation()
-        self.secondary_eval = article_mcc.ArticleMCCEvaluation()
+        self.primary_eval = article_auc_pr.ArticleAucPrEvaluation()
+        self.secondary_eval = article_mcc.ArticleMccEvaluation()
         self.results = None
         self.gold_standard = None
         self.logger = logging.getLogger("ArticleEvaluator")
