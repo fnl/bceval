@@ -38,18 +38,18 @@ class AbstractEvaluator(object):
         self.gold_standard = gold_standard
         
         self._prepare(results, gold_standard)
-        
-        for doi in results.keys():
-            if doi not in gold_standard:
-                self.logger.error("ignoring unknown doi '%s'" % str(doi))
-            else:
-                self.logger.debug("processing article '%s'" % str(doi))
-                self._process_doi(doi)
-        
+        self._process()
         return self.primary_eval, self.secondary_eval
     
     def _prepare(self, results, gold_standard):
         """Prepare the instance for the evaluation run.
+        
+        Abstract method.
+        """
+        raise NotImplementedError('abstract')
+    
+    def _process(self):
+        """Evaluate the individual performance for the given article.
         
         Abstract method.
         """
@@ -61,4 +61,3 @@ class AbstractEvaluator(object):
         Abstract method.
         """
         raise NotImplementedError('abstract')
-    

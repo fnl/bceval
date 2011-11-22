@@ -4,17 +4,19 @@ from math import sqrt
 from mock import Mock, patch
 from random import random, randint
 
-from biocreative.evaluation.calculation.protein import ProteinEvaluation
-from biocreative.evaluation.calculation.macro_evaluation import ProteinMacroEvaluation
-from biocreative.evaluation.calculation.tests.test_helpers \
-    import Constants as C, CalculationAssertions
+from biocreative.evaluation.calculation.protein_evaluation import \
+    ProteinEvaluation
+from biocreative.evaluation.calculation.macro_evaluation import \
+    ProteinMacroEvaluation
+from biocreative.evaluation.calculation.tests.test_helpers import \
+    Constants as C, CalculationAssertions
 
 class ProteinMacroEvaluationTest(CalculationAssertions):
     
     def setUp(self):
         RandomProteinEvaluation = \
             ProteinMacroEvaluationTest.init_random_protein_evaluation_mock
-        self.random_mocks = [RandomProteinEvaluation() for i in range(10)]
+        self.random_mocks = dict((i, RandomProteinEvaluation()) for i in range(10))
         self.evaluator = ProteinMacroEvaluation(self.random_mocks)
     
     @staticmethod
@@ -32,16 +34,18 @@ class ProteinMacroEvaluationTest(CalculationAssertions):
     
     def test_std_dev(self):
         for prop in C.PROTEIN_PROPERTIES:
-            expected = ProteinMacroEvaluationTest.calculate_std_dev(
-                [getattr(m, prop) for m in self.random_mocks]
-            )
-            received = self.evaluator.std_dev(prop)
-            self.assert_values(prop, expected, received)
+            if prop != 'avrg_p':
+                expected = ProteinMacroEvaluationTest.calculate_std_dev(
+                    [getattr(m, prop) for m in self.random_mocks.values()]
+                )
+                received = self.evaluator.std_dev(prop)
+                self.assert_values(prop, expected, received)
     
     def test_properties_except_hits(self):
         for prop in C.PROTEIN_PROPERTIES:
-            expected = self.get_average_for(prop)
-            self.assert_property(prop, expected)
+            if prop != 'avrg_p':
+                expected = self.get_average_for(prop)
+                self.assert_property(prop, expected)
     
     @patch('biocreative.evaluation.calculation.hits.Hits', spec=True)
     def test_hits(self, unused):
@@ -49,7 +53,7 @@ class ProteinMacroEvaluationTest(CalculationAssertions):
         
         for attr in C.HITS_ATTRIBUTES:
             expected[attr] = sum(
-                getattr(mock.hits, attr) for mock in self.random_mocks
+                getattr(mock.hits, attr) for mock in self.random_mocks.values()
             )
         
         received = self.evaluator.hits
@@ -81,7 +85,7 @@ class ProteinMacroEvaluationTest(CalculationAssertions):
     
     def get_average_for(self, prop):
         return ProteinMacroEvaluationTest.calculate_average(
-            [getattr(m, prop) for m in self.random_mocks]
+            [getattr(m, prop) for m in self.random_mocks.values()]
         )
     
     @staticmethod

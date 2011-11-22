@@ -4,7 +4,7 @@ from mock import Mock, patch
 
 from biocreative.evaluation.calculation.tests.test_helpers \
     import Constants as C, CalculationAssertions
-from biocreative.evaluation.calculation.protein import ProteinEvaluation
+from biocreative.evaluation.calculation.protein_evaluation import ProteinEvaluation
 
 class ProteinEvaluationTest(CalculationAssertions):
     

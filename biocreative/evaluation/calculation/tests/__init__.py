@@ -7,7 +7,7 @@ from biocreative.evaluation.calculation.article_auc_pr \
     import ArticleAucPrEvaluation
 from biocreative.evaluation.calculation.article_mcc \
     import ArticleMccEvaluation
-from biocreative.evaluation.calculation.protein \
+from biocreative.evaluation.calculation.protein_evaluation \
     import ProteinEvaluation
 from biocreative.evaluation.calculation.macro_evaluation \
     import ProteinMacroEvaluation
@@ -79,16 +79,16 @@ class CalculationTests(CalculationAssertions):
         protein_results = [
             CalculationTests.random_protein_result() for i in range(50)
         ]
-        self.evaluator = ProteinMacroEvaluation(protein_results)
+        self.evaluator = ProteinMacroEvaluation(
+            ((i, r) for i, r in enumerate(protein_results))
+        )
         N = len(protein_results)
         precision = sum(p.precision for p in protein_results) / N
         recall = sum(p.recall for p in protein_results) / N
         f_score = sum(p.f_score for p in protein_results) / N
-        avrg_p = sum(p.avrg_p for p in protein_results) / N
         self.assert_property("precision", precision)
         self.assert_property("recall", recall)
         self.assert_property("f_score", f_score)
-        self.assert_property("avrg_p", avrg_p)
     
     @staticmethod
     def random_protein_result():

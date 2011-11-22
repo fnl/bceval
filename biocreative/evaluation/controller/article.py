@@ -23,6 +23,14 @@ class ArticleEvaluator(AbstractEvaluator):
             "ACT evaluation fn=%i" % self.primary_eval.hits.fn
         )
     
+    def _process(self):
+        for doi in results.keys():
+            if doi not in gold_standard:
+                self.logger.error("ignoring unknown doi '%s'" % str(doi))
+            else:
+                self.logger.debug("processing article '%s'" % str(doi))
+                self._process_doi(doi)
+    
     def _process_doi(self, doi):
         "Evaluate the individual performance for the given article."
         result_item = self.results[doi].item

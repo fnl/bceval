@@ -2,7 +2,7 @@ import logging
 
 from biocreative.evaluation.calculation.macro_evaluation import \
     ProteinMacroEvaluation
-from biocreative.evaluation.calculation.protein import \
+from biocreative.evaluation.calculation.protein_evaluation import \
     ProteinEvaluation
 from biocreative.evaluation.controller.abstract import AbstractEvaluator
 
@@ -28,11 +28,9 @@ class ProteinEvaluator(AbstractEvaluator):
             "INT/IPT evaluation: %i GS annotations" % 
             self.primary_eval.hits.fn
         )
-        self._process_micro_scores()
     
-    def _process_micro_scores(self):
-        "Calculate P/R values for each rank over the complete document set."
-        self.logger.debug("processing micro-averaged results")
+    def _process(self):
+        "Process the result set."
         self._dois = self.results.keys()
         self._dois.sort()
         result_sizes = [
@@ -45,16 +43,25 @@ class ProteinEvaluator(AbstractEvaluator):
         if self.cutoff and self.cutoff < max_rank_in_results:
             max_rank_in_results = self.cutoff
         
+        for doi in list(self._dois):
+            result_items = self.results[doi]
+            std_items = self.gold_standard[doi]
+            result_doc = ProteinEvaluation(doi=doi, fn=len(std_items))
+            self.secondary_eval[doi] = result_doc
+            
         for rank in range(max_rank_in_results):
             for doi in list(self._dois):
-                self._process_micro_doi(doi, rank)
+                self._process_doi(doi, rank)
             
-            # Calcuate & store the current P/R value
-            # at this rank over all documents
+            # Calculate & store the average P/R pair
+            # at this rank over all documents (macro-averaging)
+            self.secondary_eval.store_p_at_current_r()
+            # Calculate & store the current P/R value
+            # at this rank over all documents (micro-averaging)
             self.primary_eval.store_p_at_current_r()
     
-    def _process_micro_doi(self, doi, rank):
-        "Evaluate each result at a given rank for all documents at once."
+    def _process_doi(self, doi, rank):
+        "Evaluate the result at a given rank for a document."
         result_items = self.results[doi]
         std_items = self.gold_standard.get(doi) # special syntax for mocking
         
@@ -66,13 +73,4 @@ class ProteinEvaluator(AbstractEvaluator):
         else:
             # evaluate the result at the current rank
             self.primary_eval.evaluate_item(item, std_items)
-    
-    def _process_doi(self, doi):
-        "Evaluate the individual performance for the given article."
-        # self.logger.debug("counting macro-hits for %s" % doi)
-        result_items = self.results[doi]
-        std_items = self.gold_standard[doi]
-        result_doc = ProteinEvaluation(doi=doi, fn=len(std_items))
-        result_doc.evaluate(result_items, std_items, self.cutoff)
-        self.secondary_eval.append(result_doc)
-    
+            self.secondary_eval[doi].evaluate_item(item, std_items)

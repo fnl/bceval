@@ -254,6 +254,7 @@ class Output(object):
     avrg_p = 'avrg_p'
     auc_pr = 'auc_pr'
     f_score = 'f_score'
+    fap_score = 'fap_score'
     recall = 'recall'
     precision = 'precision'
     sensitivity = 'sensitivity'
@@ -317,7 +318,7 @@ class OutputHandler(object):
         self.file.close()
         
         if self.plot_result:
-            plot_avrg_p_curves(primary, self.evaluation_type)
+            plot_avrg_p_curves(primary, secondary, self.evaluation_type)
     
     def _verbose_ACT(self, pr_data, mcc_acc_data):
         hits = mcc_acc_data.hits
@@ -370,13 +371,10 @@ class OutputHandler(object):
         print >> self._fh
         self.__p("Macro-averaged results")
         print >> self._fh
-        self.__p("StdDev\tprecs.:\t%.5f\trecall:\t%.5f" % (
+        self.__p("StdDev\tprecs.:\t%.5f\trecall:\t%.5f\tF-scr.:\t%.5f" % (
             macro_data.std_dev('precision'),
-            macro_data.std_dev('recall')
-        ))
-        self.__p("StdDev\tF-scr.:\t%.5f\tAvrg P:\t%.5f" % (
+            macro_data.std_dev('recall'),
             macro_data.std_dev('f_score'),
-            macro_data.std_dev('avrg_p')
         ))
         print >> self._fh
         self.__p("Macro\tprecs.:\t%.5f\trecall:\t%.5f" % (
@@ -385,15 +383,28 @@ class OutputHandler(object):
         self.__p("Macro\tF-scr.:\t%.5f\tAvrg P:\t%.5f" % (
             macro_data.f_score, macro_data.avrg_p
         ))
+        self.__p("Macro\tFAP-s.:\t%.5f" % (
+            self._fap_score_calc(macro_data.f_score, macro_data.avrg_p)
+        ))
         print >> self._fh
-        self.__p("Baseline results")
+        self.__p("Micro-averaged results")
         print >> self._fh
-        self.__p("precs.:\t%.5f\trecall:\t%.5f" % (
+        self.__p("Micro\tprecs.:\t%.5f\trecall:\t%.5f" % (
             micro_data.precision, micro_data.recall
         ))
-        self.__p("F-scr.:\t%.5f\tAvrg P:\t%.5f" % (
+        self.__p("Micro\tF-scr.:\t%.5f\tAvrg P:\t%.5f" % (
             micro_data.f_score, micro_data.avrg_p
         ))
+        self.__p("Micro\tFAP-s.:\t%.5f" % (
+            self._fap_score_calc(micro_data.f_score, micro_data.avrg_p)
+        ))
+
+    @staticmethod
+    def _fap_score_calc(f_score, avrg_p):
+        if f_score and avrg_p:
+            return 2 * f_score * avrg_p / (f_score + avrg_p)
+        else:
+            return 0.0
 
     def _yield_string_formated_items(self, values):
         for item in values:
@@ -420,7 +431,7 @@ class OutputHandler(object):
         ]
         self.__p("\t".join(self._yield_string_formated_items(items)))
     
-    def _tabular(self, macro_data, micro_data):
+    def _tabular(self, micro_data, macro_data):
         hits = micro_data.hits
         items = [
             self.result_name, len(macro_data), # = num evaluated documents
@@ -428,15 +439,33 @@ class OutputHandler(object):
             macro_data.precision, macro_data.std_dev('precision'),
             macro_data.recall, macro_data.std_dev('recall'),
             macro_data.f_score, macro_data.std_dev('f_score'),
-            macro_data.avrg_p, macro_data.std_dev('avrg_p'),
+            macro_data.avrg_p,
+            self._fap_score_calc(macro_data.f_score, macro_data.avrg_p),
             micro_data.precision, micro_data.recall,
             micro_data.f_score, micro_data.avrg_p,
+            self._fap_score_calc(micro_data.f_score, micro_data.avrg_p),
         ]
         self.__p("\t".join(self._yield_string_formated_items(items)))
 
     #noinspection PyUnusedLocal
-    def _avrg_p(self, macro_data, micro_data):
-        self.__p(micro_data.avrg_p)
+    def _fap_score(self, micro_data, macro_data):
+        return self._fap_score_calc(macro_data.f_score, macro_data.avrg_p)
+    
+    #noinspection PyUnusedLocal
+    def _avrg_p(self, micro_data, macro_data):
+        self.__p(macro_data.avrg_p)
+    
+    #noinspection PyUnusedLocal
+    def _f_score(self, micro_data, macro_data):
+        self.__p(macro_data.f_score)
+    
+    #noinspection PyUnusedLocal
+    def _recall(self, micro_data, macro_data):
+        self.__p(macro_data.recall)
+    
+    #noinspection PyUnusedLocal
+    def _precision(self, micro_data, macro_data):
+        self.__p(macro_data.precision)
     
     #noinspection PyUnusedLocal
     def _auc_pr_ACT(self, pr_data, mcc_acc_data):
@@ -445,19 +474,7 @@ class OutputHandler(object):
     #noinspection PyUnusedLocal
     def _mcc_score_ACT(self, pr_data, mcc_acc_data):
         self.__p(mcc_acc_data.mcc_score)
-    
-    #noinspection PyUnusedLocal
-    def _f_score(self, macro_data, micro_data):
-        self.__p(micro_data.f_score)
-    
-    #noinspection PyUnusedLocal
-    def _recall(self, macro_data, micro_data):
-        self.__p(micro_data.recall)
-    
-    #noinspection PyUnusedLocal
-    def _precision(self, micro_data, macro_data):
-        self.__p(micro_data.precision)
-    
+
     #noinspection PyUnusedLocal
     def _sensitivity_ACT(self, pr_data, mcc_acc_data):
         self.__p(mcc_acc_data.sensitivity)
@@ -544,10 +561,9 @@ def main(args, opts):
         if params.evaluation_type == Evaluate.ACT:
             print "run\tTP\tFP\tFN\tTN\tspec\tsens\tacc\tmcc\tp_at_r\tpr"
         else:
-            print "run\tdocs\tTP\tFP\tFN\t",
-            print "prec_m\tprec_sd\trec_m\trec_sd\t",
-            print "f1_m\tf1_sd\tap_ma\tap_sd",
-            print "\tprec\trec\tf1\tap"
+            print "run\tdocs\tTP\tFP\tFN\tprec_ma\tprec_sd\trec_ma\trec_sd",
+            print "\tf1_ma\tf1_sd\tap_ma\tfap_ma",
+            print "\tprec_mi\trec_mi\tf1_mi\tap_mi\tfap_mi"
     
     for result_file in file_store.results:
         results = Result_Reader(
@@ -658,6 +674,11 @@ if __name__ == "__main__":
         "-t", "--tabular", action="store_const",
         const=Output.tabular, dest="output_mode",
         help="print tabular output"
+    )
+    parser.add_option(
+        "--fap-score", action="store_const",
+        const=Output.fap_score, dest="output_mode",
+        help="print FAP-score only"
     )
     parser.add_option(
         "--avrg-p", action="store_const",
@@ -779,7 +800,8 @@ if __name__ == "__main__":
         if opts.CUTOFF_AT_RANK:
             parser.error("cutoff n/a to ACT evaluation")
         elif opts.output_mode in (
-            Output.recall, Output.precision, Output.f_score, Output.avrg_p
+            Output.recall, Output.precision, Output.f_score, Output.avrg_p,
+            Output.fap_score
         ):
             parser.error(
                 "%s n/a to ACT evaluation" % opts.output_mode

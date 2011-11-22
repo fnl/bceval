@@ -45,7 +45,7 @@ if __name__ == '__main__':
         import HitsTest
     from biocreative.evaluation.calculation.macro_evaluation \
         import ProteinMacroEvaluationTest
-    from biocreative.evaluation.calculation.protein \
+    from biocreative.evaluation.calculation.protein_evaluation \
         import ProteinEvaluationTest
     from biocreative.evaluation.calculation \
         import CalculationTests

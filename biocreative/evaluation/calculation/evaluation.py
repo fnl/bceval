@@ -50,6 +50,12 @@ class AbstractEvaluation(object):
             
             yield precision_values[0], r
     
+    def _get_recall_values(self):
+        """Return all recall values sorted incrementally."""
+        recall_values = self.precisions_at_recall.keys()
+        recall_values.sort()
+        return recall_values
+    
     @property
     def p_at_full_r(self):
         """Maximum precision at full recall (or None)."""
@@ -76,12 +82,6 @@ class AbstractEvaluation(object):
         #     hits.tp, hits.tp, hits.fn
         # ))
         return self._divide(hits.tp, float(hits.tp + hits.fn))
-    
-    def _get_recall_values(self):
-        """Return all recall values sorted incrementally."""
-        recall_values = self.precisions_at_recall.keys()
-        recall_values.sort()
-        return recall_values
     
     @staticmethod
     def _divide(denominator, divisor):

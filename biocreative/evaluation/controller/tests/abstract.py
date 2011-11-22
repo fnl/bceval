@@ -23,8 +23,8 @@ class AbstractEvaluatorTest(unittest.TestCase):
         self.assertEqual(self.reset_mock.call_args, ((), {}))
     
     @patch_object(AbstractEvaluator, '_prepare')
-    @patch_object(AbstractEvaluator, '_process_doi')
-    def test_process(self, process_doi_mock, prepare_mock):
+    @patch_object(AbstractEvaluator, '_process')
+    def test_process(self, process_mock, prepare_mock):
         gold_standard = {1: 'a'}
         results = {1: 'a', 2: 'b'}
         primary, secondary = self.eval.process(results, gold_standard)
@@ -32,13 +32,7 @@ class AbstractEvaluatorTest(unittest.TestCase):
         self.assert_called_once_with(
             self.logger_mock.info, "processing results with cutoff=0"
         )
-        self.assert_called_once_with(
-            self.logger_mock.debug, "processing article '1'"
-        )
-        self.assert_called_once_with(
-            self.logger_mock.error, "ignoring unknown doi '2'"
-        )
-        self.assert_called_once_with(process_doi_mock, 1)
+        self.assert_called_once_with(process_mock)
     
     def assert_called_once_with(self, mock, *args, **kwds):
         self.assertEqual(mock.call_count, 1)
