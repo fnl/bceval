@@ -11,6 +11,7 @@ class Parameters(object):
         self.field_separator = Defaults.FIELD_SEPARATOR
         self.evaluation_type = Evaluate.check_type(opts.EVALUATION_TYPE)
         self.cutoff = int(opts.CUTOFF_AT_RANK)
+        self.min_conf = opts.MIN_CONF
         
         # flags
         self.plot_result = bool(opts.PLOT_RESULT)

@@ -15,7 +15,7 @@ class ArticleEvaluator(AbstractEvaluator):
         self.gold_standard = None
         self.logger = logging.getLogger("ArticleEvaluator")
     
-    def _prepare(self, results, gold_standard):
+    def _prepare(self):
         "Prepare the instance for the evaluation run."
         self.primary_eval.hits.fn = self.gold_standard.true_items()
         self.secondary_eval.hits.fn = 0

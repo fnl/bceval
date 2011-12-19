@@ -384,7 +384,7 @@ class OutputHandler(object):
             macro_data.f_score, macro_data.avrg_p
         ))
         self.__p("Macro\tFAP-s.:\t%.5f" % (
-            self._fap_score_calc(macro_data.f_score, macro_data.avrg_p)
+            macro_data.fap_score
         ))
         print >> self._fh
         self.__p("Micro-averaged results")
@@ -396,15 +396,8 @@ class OutputHandler(object):
             micro_data.f_score, micro_data.avrg_p
         ))
         self.__p("Micro\tFAP-s.:\t%.5f" % (
-            self._fap_score_calc(micro_data.f_score, micro_data.avrg_p)
+            micro_data.fap_score
         ))
-
-    @staticmethod
-    def _fap_score_calc(f_score, avrg_p):
-        if f_score and avrg_p:
-            return 2 * f_score * avrg_p / (f_score + avrg_p)
-        else:
-            return 0.0
 
     def _yield_string_formated_items(self, values):
         for item in values:
@@ -439,17 +432,15 @@ class OutputHandler(object):
             macro_data.precision, macro_data.std_dev('precision'),
             macro_data.recall, macro_data.std_dev('recall'),
             macro_data.f_score, macro_data.std_dev('f_score'),
-            macro_data.avrg_p,
-            self._fap_score_calc(macro_data.f_score, macro_data.avrg_p),
+            macro_data.avrg_p, macro_data.fap_score,
             micro_data.precision, micro_data.recall,
-            micro_data.f_score, micro_data.avrg_p,
-            self._fap_score_calc(micro_data.f_score, micro_data.avrg_p),
+            micro_data.f_score, micro_data.avrg_p, micro_data.fap_score,
         ]
         self.__p("\t".join(self._yield_string_formated_items(items)))
 
     #noinspection PyUnusedLocal
     def _fap_score(self, micro_data, macro_data):
-        return self._fap_score_calc(macro_data.f_score, macro_data.avrg_p)
+        self.__p(macro_data.fap_score)
     
     #noinspection PyUnusedLocal
     def _avrg_p(self, micro_data, macro_data):
@@ -587,6 +578,12 @@ def main(args, opts):
             if params.cutoff:
                 for doi in secondary:
                     secondary[doi] = secondary[doi][0:params.cutoff]
+            elif params.min_conf:
+                for doi in secondary:
+                    secondary[doi] = [
+                        i for i in secondary[doi]
+                        if i.confidence >= params.min_conf
+                    ]
             
             output_handle.debug(secondary)
         elif opts.debug_gs:
@@ -657,6 +654,11 @@ if __name__ == "__main__":
         "-k", "--cutoff", action="store", type="int",
         default=Defaults.CUTOFF_AT_RANK, dest="CUTOFF_AT_RANK",
         help="only use CUTOFF results per document [default: all]"
+    )
+    parser.add_option(
+        "-z", "--min-conf", action="store", type="float",
+        default=Defaults.MIN_CONF, dest="MIN_CONF",
+        help="cutoff below MIN_CONF per document [default: all]"
     )
     parser.add_option(
         "-e", "--exclude-missed-docs", action="store_true",

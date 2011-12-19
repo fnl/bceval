@@ -86,7 +86,7 @@ class Manager(object):
             return gold_standard, results
 
         controller_class = controller_factory(self.evaluation_type)
-        controller = controller_class(params.cutoff)
+        controller = controller_class(params.cutoff, params.min_conf)
         
         # ===============================================
         # ==== The actual evaluation continues here. ====

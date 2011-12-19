@@ -17,13 +17,13 @@ class ProteinEvaluator(AbstractEvaluator):
         self.gold_standard = None
         self.logger = logging.getLogger("ProteinEvaluator")
     
-    def _prepare(self, results, gold_standard):
+    def _prepare(self):
         "Prepare the instance for the evaluation run."
-        assert len(results) == len(gold_standard), \
+        assert len(self.results) == len(self.gold_standard), \
             "the entries in the evaluation result and the gold standard " \
             "do not match"
         
-        self.primary_eval.set_fn(gold_standard.true_items())
+        self.primary_eval.set_fn(self.gold_standard.true_items())
         self.logger.debug(
             "INT/IPT evaluation: %i GS annotations" % 
             self.primary_eval.hits.fn
@@ -71,6 +71,11 @@ class ProteinEvaluator(AbstractEvaluator):
             # no more results for this DOI
             self._dois.remove(doi)
         else:
-            # evaluate the result at the current rank
-            self.primary_eval.evaluate_item(item, std_items)
-            self.secondary_eval[doi].evaluate_item(item, std_items)
+            if item.confidence is not None and \
+               item.confidence < self.min_conf:
+                self._dois.remove(doi) # confidence-base cutoff
+            else:
+                # evaluate the result at the current rank
+                self.primary_eval.evaluate_item(item, std_items)
+                self.secondary_eval[doi].evaluate_item(item, std_items)
+                self.secondary_eval[doi].store_p_at_current_r()

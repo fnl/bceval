@@ -46,6 +46,8 @@ class ProteinEvaluation(AbstractEvaluation):
             avrg_p += p * (r - last_r)
             last_r = r
 
+        # self.logger.debug("avrg-p from: %s",
+        #                   list(self.yield_precision_recall_pairs()))
         return avrg_p
     
     @property
@@ -56,3 +58,11 @@ class ProteinEvaluation(AbstractEvaluation):
         # self.logger.debug("f-score from: p=%.5f, r=%.5f" % (p, r))
         return self._divide(2.0 * p * r, p + r)
     
+    @property
+    def fap_score(self):
+        "Balanced (beta=1.0) FAP-score for the Hit set."
+        f = self.f_score
+        ap = self.avrg_p
+        # self.logger.debug("fap-score from: f=%.5f, ap=%.5f" % (f, ap))
+        return self._divide(2.0 * f * ap, f + ap)
+

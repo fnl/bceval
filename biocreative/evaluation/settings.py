@@ -21,6 +21,7 @@ class Defaults(object):
     # the former; however, if conf or rank are given, the fields must be in
     # the result file - or, vice versa, absent in the file if not given
     CUTOFF_AT_RANK = 0 # 0 for no cutoff
+    MIN_CONF = 0.0 # minimum confidence cutoff
     FIELD_SEPARATOR = '\t' # cannot be changed on the CL
     CONFIG_FILE = p.join(p.dirname(p.abspath(__file__)), 'configuration.ini')
 

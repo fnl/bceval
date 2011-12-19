@@ -72,6 +72,16 @@ class ProteinMacroEvaluation(dict):
         return avrg_p
 
     @property
+    def fap_score(self):
+        f = self.f_score
+        ap = self.avrg_p
+        # self.logger.debug("fap-score from: f=%.5f, ap=%.5f" % (f, ap))
+        if f and ap:
+            return 2.0 * f * ap / (f + ap)
+        else:
+            return 0.0
+
+    @property
     def hits(self):
         """Sum up all the hits in each individual (per document) result and
         return them in a Hit object.

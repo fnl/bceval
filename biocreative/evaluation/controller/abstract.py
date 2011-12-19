@@ -3,8 +3,9 @@ import logging
 class AbstractEvaluator(object):
     """Abstract implementation of the evaluation process."""
     
-    def __init__(self, cutoff):
+    def __init__(self, cutoff, min_conf=0.0):
         self.cutoff = cutoff
+        self.min_conf = min_conf
         self.primary_eval = None # micro for INT/IPT, AUC P/R for ACT
         self.secondary_eval = None # macro for INT/IPT, MCC+Acc for ACT
         self.results = None
@@ -37,7 +38,7 @@ class AbstractEvaluator(object):
         self.results = results
         self.gold_standard = gold_standard
         
-        self._prepare(results, gold_standard)
+        self._prepare()
         self._process()
         return self.primary_eval, self.secondary_eval
     
