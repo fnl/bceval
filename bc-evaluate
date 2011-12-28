@@ -240,7 +240,7 @@ from biocreative.evaluation.parameters import Parameters
 from biocreative.evaluation.settings import Defaults, Evaluate
 
 __author__ = "Florian Leitner"
-__version__ = "3.0.1"
+__version__ = "3.1"
 
 # ===================
 # = Output Handling =
