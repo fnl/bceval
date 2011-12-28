@@ -566,7 +566,8 @@ def main(args, opts):
             # ======= The actual evaluation is done by this call. =======
             primary, secondary = manager.evaluate(results, params, debug)
             # ===========================================================
-        except Exception:
+        except Exception, ex:
+            logger.warning(str(ex))
             logger.critical("evaluation failed for %s" % result_file)
             
             if logger.isEnabledFor(logging.DEBUG):
