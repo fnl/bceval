@@ -40,10 +40,12 @@ class ProteinEvaluatorTest(unittest.TestCase):
         results_mock = Mock(spec=ProteinDataDict)
         # use distinct return value to make sure things are set up right:
         gs_mock.true_items.return_value = 10
+        self.eval.gold_standard = gs_mock
+        self.eval.results = results_mock
         self.eval._process_micro_scores = Mock()
         len_mock.return_value = 5 # again to make sure all as expected
         # RUN THE TEST
-        self.eval._prepare(results_mock, gs_mock)
+        self.eval._prepare()#results_mock, gs_mock)
         # ASSERT RESULTS
         self.assertEqual(len_mock.call_count, 2)
         self.assertEqual(
@@ -57,15 +59,15 @@ class ProteinEvaluatorTest(unittest.TestCase):
         )
     
     def test_prepare_raises_error(self):
-        results = {1: None, 2: None}
-        gold_standard = {1: None}
-        self.assertRaises(
-            AssertionError, self.eval._prepare, results, gold_standard
-        )
-        self.assertRaises(
-            AssertionError, self.eval._prepare, {}, gold_standard
-        )
-    
+        self.eval.results = {1: None, 2: None}
+        self.eval.gold_standard = {1: None}
+        self.assertRaises(AssertionError, self.eval._prepare)
+        self.eval.results = {}
+        self.assertRaises(AssertionError, self.eval._prepare)
+        self.eval.results = {1: None, 2: None}
+        self.eval.gold_standard = {}
+        self.assertRaises(AssertionError, self.eval._prepare)
+
     def test_process(self):
         # SETUP
         self.eval.gold_standard = {'a': [1,2,3], 'b': [1,2,3], 'c': [1,2,3]}
@@ -97,8 +99,16 @@ class ProteinEvaluatorTest(unittest.TestCase):
         self.eval.primary_eval = Mock(spec=ProteinEvaluation)
         self.eval._dois = [1]
         self.assertEqual(len(self.eval.secondary_eval), 1)
-        self.eval.gold_standard = {1: [1,2,3]}
-        self.eval.results = {1: [1, 4]}
+        one = Mock()
+        one.confidence = None
+        two = Mock()
+        two.confidence = None
+        three = Mock()
+        three.confidence = None
+        four = Mock()
+        four.confidence = None
+        self.eval.gold_standard = {1: [one,two,three]}
+        self.eval.results = {1: [one, four]}
         self.eval._process_doi(1, 0)
         self.eval._process_doi(1, 1)
         self.eval._process_doi(1, 2)

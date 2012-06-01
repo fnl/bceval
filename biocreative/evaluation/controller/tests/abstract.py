@@ -28,7 +28,7 @@ class AbstractEvaluatorTest(unittest.TestCase):
         gold_standard = {1: 'a'}
         results = {1: 'a', 2: 'b'}
         primary, secondary = self.eval.process(results, gold_standard)
-        self.assert_called_once_with(prepare_mock, results, gold_standard)
+        self.assert_called_once_with(prepare_mock)
         self.assert_called_once_with(
             self.logger_mock.info, "processing results with cutoff=0"
         )

@@ -214,6 +214,9 @@ File format: UniProt accession (string) followed by a tabulator, followed by
 a taxonomic identifier (in essence, any string).
 
 ========================================================
+Acknowledgements/Contributions:
+Simon Hafner
+
 Created by Florian Leitner on 2009-10-14 at CNIO.
 Copyright (c) Florian Leitner. All rights reserved.
 License: GNU Public License, latest version."""
@@ -240,7 +243,7 @@ from biocreative.evaluation.parameters import Parameters
 from biocreative.evaluation.settings import Defaults, Evaluate
 
 __author__ = "Florian Leitner"
-__version__ = "3.1"
+__version__ = "3.2"
 
 # ===================
 # = Output Handling =

@@ -42,7 +42,7 @@ class AbstractEvaluator(object):
         self._process()
         return self.primary_eval, self.secondary_eval
     
-    def _prepare(self, results, gold_standard):
+    def _prepare(self):
         """Prepare the instance for the evaluation run.
         
         Abstract method.

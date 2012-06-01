@@ -41,7 +41,7 @@ class ArticleEvaluatorTest(unittest.TestCase):
         self.eval.primary_eval.hits = Mock(spec=Hits)
         self.eval.secondary_eval.hits = Mock(spec=Hits)
         # RUN TEST
-        self.eval._prepare({}, gs_mock)
+        self.eval._prepare()
         # ASSERT
         self.assert_called_once_with(gs_mock.true_items)
         self.assertEqual(self.eval.primary_eval.hits.fn, 10)

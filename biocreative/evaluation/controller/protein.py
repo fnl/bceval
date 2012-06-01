@@ -7,18 +7,19 @@ from biocreative.evaluation.calculation.protein_evaluation import \
 from biocreative.evaluation.controller.abstract import AbstractEvaluator
 
 class ProteinEvaluator(AbstractEvaluator):
-    "Implementation of the evaluation process for INT and IPT."
+    """Implementation of the evaluation process for INT and IPT."""
     
     def reset(self):
-        "Reset the internal state to reuse the evaluator."
+        """Reset the internal state to reuse the evaluator."""
         self.primary_eval = ProteinEvaluation()
         self.secondary_eval = ProteinMacroEvaluation()
         self.results = None
         self.gold_standard = None
         self.logger = logging.getLogger("ProteinEvaluator")
-    
+        self._dois = None
+
     def _prepare(self):
-        "Prepare the instance for the evaluation run."
+        """Prepare the instance for the evaluation run."""
         assert len(self.results) == len(self.gold_standard), \
             "the entries in the evaluation result and the gold standard " \
             "do not match"
@@ -30,7 +31,7 @@ class ProteinEvaluator(AbstractEvaluator):
         )
     
     def _process(self):
-        "Process the result set."
+        """Process the result set."""
         self._dois = self.results.keys()
         self._dois.sort()
         result_sizes = [
@@ -44,7 +45,6 @@ class ProteinEvaluator(AbstractEvaluator):
             max_rank_in_results = self.cutoff
         
         for doi in list(self._dois):
-            result_items = self.results[doi]
             std_items = self.gold_standard[doi]
             result_doc = ProteinEvaluation(doi=doi, fn=len(std_items))
             self.secondary_eval[doi] = result_doc
@@ -61,7 +61,7 @@ class ProteinEvaluator(AbstractEvaluator):
             self.primary_eval.store_p_at_current_r()
     
     def _process_doi(self, doi, rank):
-        "Evaluate the result at a given rank for a document."
+        """Evaluate the result at a given rank for a document."""
         result_items = self.results[doi]
         std_items = self.gold_standard.get(doi) # special syntax for mocking
         
