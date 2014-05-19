@@ -12,33 +12,40 @@ The BioCreative homepage: http://www.biocreative.org/
 
 General information on the evaluation script: http://www.biocreative.org/resources/biocreative-ii5/evaluation-library/
 
+.. image:: https://zenodo.org/badge/doi/10.5281/zenodo.9970.png
+   :target: https://zenodo.org/record/9970
+   :alt: DOI:10.5281/zenodo.9970
+
+Version 3.2
+DOI:10.5281/zenodo.9970
+
 ============
 INSTALLATION
 ============
 
-Extract the library from the tar.gz:
+Extract the library from the tar.gz::
 
   tar zxvf bc_evaluation-X.X.tar.gz
 
-And move into the created directory:
+And move into the created directory::
 
   cd bc_evaluation-X.X.X
 
-Global, system wide installation (you need to have admin/sudo permissions):
+Global, system wide installation (you need to have admin/sudo permissions)::
 
   sudo python setup.py install
 
-Local, user-only installation (in your home directory, in "~/.local"):
+Local, user-only installation (in your home directory, in "~/.local")::
 
   python setup.py install --user
 
-In case you do a local (user) install, you will have to make sure that the bin directory in "~/.local" is on you PATH, otherwise the bc-evaluate executable will not be found:
+In case you do a local (user) install, you will have to make sure that the bin directory in "~/.local" is on you PATH, otherwise the bc-evaluate executable will not be found::
 
   export PATH=$PATH:~/.local/bin
 
 To only test if the installation command will work as you think it should, add the option '--dry-run' to the above commands - you will see what will happen, but the setup script will not copy or do anything.
 
-Documentation on installing python packages (using setup.py):
+Documentation on installing python packages (using setup.py)::
 
   python setup.py --help
   python setup.py --help-commands
@@ -58,10 +65,10 @@ copying build/scripts-2.X/bc-evaluate -> /path/to/some/bin
 
 And make sure that path is in your shell's $PATH environment variable. By default, these locations should be:
 
-- Global install: /usr/local/bin
-- Local user-install: ~/.local/bin
+- Global install: `/usr/local/bin`
+- Local user-install: `~/.local/bin`
 
-After installing, you can read instructions on how to use this tool by running its help and documentation commands:
+After installing, you can read instructions on how to use this tool by running its help and documentation commands::
 
   bc-evaluate --documentation
   bc-evaluate --help
@@ -69,7 +76,7 @@ After installing, you can read instructions on how to use this tool by running i
 GENERAL NOTES
 -------------
 
-The general way of using this tool is:
+The general way of using this tool is::
 
   bc-evaluate [options] your_result_files... gold_standard_file
 
@@ -85,10 +92,10 @@ http://matplotlib.sourceforge.net/
 
 Matplotlib requires the following external packages:
 
-python 2.4 (or later, but not python3)
-numpy 1.1 (or later)
-libpng 1.1 (or later)
-freetype 1.4 (or later) [not required to use the plotting functionality of bc-evaluate]
+- python 2.4 (or later, but not python3)
+- numpy 1.1 (or later)
+- libpng 1.1 (or later)
+- freetype 1.4 (or later) [not required to use the plotting functionality of bc-evaluate]
 
 For more information about installing matplotlib, see:
 http://matplotlib.sourceforge.net/users/installing.html
